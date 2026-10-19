@@ -1,3 +1,4 @@
+
 // Dữ liệu ban đầu
 let bookings = [
   {
@@ -28,59 +29,47 @@ let bookings = [
 
 // 1. Hiển thị danh sách đơn đặt vé
 function displayBookings(bookings) {
-  // Kiểm tra nếu danh sách trống
   if (!bookings || bookings.length === 0) {
     console.log("Danh sách đơn đặt vé trống");
     return;
   }
 
   let totalRevenue = 0;
-  // Logic để xử lý khi mảng có phần tử
+
   bookings.forEach((element, index) => {
-    // Cộng dồn giá tiền
     totalRevenue += element.totalAmount;
 
     console.log(
       `${index + 1}. ${element.bookingCode} - ${element.customerName} - ${element.movieTitle}
-        SL: ${element.ticketCount}| Giá: ${element.pricePerTicket} | Tổng TT: ${element.totalAmount}
-      `,
+      SL: ${element.ticketCount} | Giá: ${element.pricePerTicket} | Tổng TT: ${element.totalAmount}`
     );
   });
 
-  // Tính tổng số lượng vé và doanh thu
-  console.log(
-    `Tổng vé: ${bookings.length} đơn đặt vé - Doanh thu: ${totalRevenue}`,
-  );
+  console.log(`Tổng số đơn đặt vé: ${bookings.length}`);
+  console.log(`Doanh thu: ${totalRevenue}`);
 }
 
-// Hàm format tên
+// 2. Chuẩn hóa tên
 function formatName(name) {
   if (!name) {
     return "";
   }
 
-  //   Loại bỏ khoảng trắng ở đầu và cuối
-  let trimed = name.trim();
+  let words = name.trim().split(/\s+/);
 
-  //  Biến đổi chuỗi thành mảng và truy cập vào từng phần tử trong mảng và biến đổi ký tự đầu thành in hoa
-  let words = trimed.split(" ");
-
-  //   Dùng map() để biến đổi
   let capitalizeWords = words.map((word) => {
     return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
   });
 
-  //   Biến đổi mảng thành chuỗi
   return capitalizeWords.join(" ");
 }
 
-// Kiểm tra xem mã đã tồn tại chưa
+// 3. Tìm vị trí đơn đặt vé theo mã
 function findBookingIndex(bookingCode) {
   if (!bookingCode) {
     return -1;
   }
 
-  //   Biến đổi mã thành in hoa
   let targetBookingCode = bookingCode.trim().toUpperCase();
 
   for (let i = 0; i < bookings.length; i++) {
@@ -92,25 +81,30 @@ function findBookingIndex(bookingCode) {
   return -1;
 }
 
-// Hàm kiểm tra mã đặt đặt vé
+// 4. Kiểm tra mã đặt vé
 function validateBookingCode(bookingCode) {
   if (bookingCode === null) {
     return "Hủy thao tác";
   }
 
-  if (bookingCode === "") {
-    return "Lỗi: chưa nhập mã đặt vé";
-  }
-
-  //   Biến đổi mã thành in hoa
   let upperCode = bookingCode.trim().toUpperCase();
 
-  if (upperCode.length < 6) {
-    return "Lỗi: Độ dài nhỏ hơn 6 ký tự";
+  if (upperCode === "") {
+    return "Lỗi: Chưa nhập mã đặt vé";
   }
 
-  if (!upperCode.startsWith("CIN-")) {
-    return "Lỗi: Mã không hợp lệ";
+  if (!upperCode.startsWith("CIN-") || upperCode.length !== 7) {
+    return "Lỗi: Mã phải có dạng CIN-001";
+  }
+
+  let codeNumber = upperCode.slice(4);
+
+  if (
+    isNaN(Number(codeNumber)) ||
+    !Number.isInteger(Number(codeNumber)) ||
+    Number(codeNumber) <= 0
+  ) {
+    return "Lỗi: Ba ký tự sau CIN- phải là số";
   }
 
   if (findBookingIndex(upperCode) !== -1) {
@@ -120,21 +114,17 @@ function validateBookingCode(bookingCode) {
   return "";
 }
 
-// 2. Thêm đơn đặt vé mới
+// 5. Thêm đơn đặt vé mới
 function handleCreateBooking() {
-  //  Validate dữ liệu đầu vào
   let bookingCode = prompt("Nhập mã đặt vé:");
 
-  // Bấm Cancel thì hủy thao tác
   if (bookingCode === null) {
     console.log("Đã hủy thao tác thêm");
     return;
   }
 
-  // Chuẩn hóa mã đặt vé
   bookingCode = bookingCode.trim().toUpperCase();
 
-  // Kiểm tra mã đặt vé
   let error = validateBookingCode(bookingCode);
 
   if (error !== "") {
@@ -142,7 +132,6 @@ function handleCreateBooking() {
     return;
   }
 
-  // Nhập tên khách hàng
   let customerName = prompt("Nhập tên khách hàng:");
 
   if (customerName === null) {
@@ -157,7 +146,6 @@ function handleCreateBooking() {
     return;
   }
 
-  // Nhập tên phim
   let movieTitle = prompt("Nhập tên phim:");
 
   if (movieTitle === null) {
@@ -172,7 +160,6 @@ function handleCreateBooking() {
     return;
   }
 
-  // Nhập số vé
   let ticketCount = prompt("Nhập số vé:");
 
   if (ticketCount === null) {
@@ -182,14 +169,18 @@ function handleCreateBooking() {
 
   ticketCount = ticketCount.trim();
 
-  if (ticketCount === "" || !/^\d+$/.test(ticketCount) || Number(ticketCount) <= 0) {
+  if (
+    ticketCount === "" ||
+    isNaN(Number(ticketCount)) ||
+    Number(ticketCount) <= 0 ||
+    !Number.isInteger(Number(ticketCount))
+  ) {
     console.log("Số vé phải là số nguyên lớn hơn 0");
     return;
   }
 
   ticketCount = Number(ticketCount);
 
-  // Nhập giá mỗi vé
   let pricePerTicket = prompt("Nhập giá mỗi vé:");
 
   if (pricePerTicket === null) {
@@ -201,8 +192,9 @@ function handleCreateBooking() {
 
   if (
     pricePerTicket === "" ||
-    !/^\d+$/.test(pricePerTicket) ||
-    Number(pricePerTicket) <= 0
+    isNaN(Number(pricePerTicket)) ||
+    Number(pricePerTicket) <= 0 ||
+    !Number.isInteger(Number(pricePerTicket))
   ) {
     console.log("Giá vé phải là số nguyên lớn hơn 0");
     return;
@@ -210,13 +202,11 @@ function handleCreateBooking() {
 
   pricePerTicket = Number(pricePerTicket);
 
-  // Tính tiền
   let baseCost = ticketCount * pricePerTicket;
   let discount = ticketCount >= 4 ? Math.round(baseCost * 0.1) : 0;
   let serviceFee = Math.round((baseCost - discount) * 0.08);
   let totalAmount = baseCost - discount + serviceFee;
 
-  // Tạo đơn đặt vé mới
   let newBooking = {
     bookingCode: bookingCode,
     customerName: customerName,
@@ -226,10 +216,8 @@ function handleCreateBooking() {
     totalAmount: totalAmount,
   };
 
-  // Thêm đơn vào cuối mảng
   bookings.push(newBooking);
 
-  // In hóa đơn
   console.log("Thêm đơn đặt vé thành công");
   console.log("Mã đặt vé:", bookingCode);
   console.log("Tên khách hàng:", customerName);
@@ -241,7 +229,8 @@ function handleCreateBooking() {
   console.log("Phí dịch vụ:", serviceFee);
   console.log("Tổng thanh toán:", totalAmount);
 }
-// 3. Cập nhật đơn đặt vé
+
+// 6. Cập nhật đơn đặt vé
 function handleUpdateBooking() {
   let bookingCode = prompt("Nhập mã đặt vé cần cập nhật:");
 
@@ -266,7 +255,7 @@ function handleUpdateBooking() {
     return;
   }
 
-    customerName = formatName(customerName);
+  customerName = formatName(customerName);
 
   if (customerName === "") {
     console.log("Tên khách hàng không được để trống");
@@ -298,8 +287,9 @@ function handleUpdateBooking() {
 
   if (
     ticketCount === "" ||
-    !/^\d+$/.test(ticketCount) ||
-    Number(ticketCount) <= 0
+    isNaN(Number(ticketCount)) ||
+    Number(ticketCount) <= 0 ||
+    !Number.isInteger(Number(ticketCount))
   ) {
     console.log("Số vé phải là số nguyên lớn hơn 0");
     return;
@@ -318,8 +308,9 @@ function handleUpdateBooking() {
 
   if (
     pricePerTicket === "" ||
-    !/^\d+$/.test(pricePerTicket) ||
-    Number(pricePerTicket) <= 0
+    isNaN(Number(pricePerTicket)) ||
+    Number(pricePerTicket) <= 0 ||
+    !Number.isInteger(Number(pricePerTicket))
   ) {
     console.log("Giá vé phải là số nguyên lớn hơn 0");
     return;
@@ -344,10 +335,13 @@ function handleUpdateBooking() {
   console.log("Tên phim:", movieTitle);
   console.log("Số vé:", ticketCount);
   console.log("Giá mỗi vé:", pricePerTicket);
+  console.log("Chi phí cơ sở:", baseCost);
+  console.log("Giảm giá:", discount);
+  console.log("Phí dịch vụ:", serviceFee);
   console.log("Tổng thanh toán:", totalAmount);
 }
 
-// 4. Xóa đơn đặt vé
+// 7. Xóa đơn đặt vé
 function handleDeleteBooking() {
   let bookingCode = prompt("Nhập mã đặt vé cần xóa:");
 
@@ -382,7 +376,7 @@ function handleDeleteBooking() {
   console.log("Số đơn còn lại:", bookings.length);
 }
 
-// 5. Tìm kiếm đơn đặt vé theo tên phim
+// 8. Tìm kiếm đơn đặt vé theo tên phim
 function handleSearchBooking() {
   let movieTitle = prompt("Nhập tên phim cần tìm:");
 
@@ -408,55 +402,61 @@ function handleSearchBooking() {
   }
 
   console.log("Danh sách đơn đặt vé tìm thấy:");
-
   displayBookings(result);
 }
 
-// Hàm chạy chương trình
+// 9. Hàm chạy chương trình
 function main() {
   let choice;
+
   do {
-    //  Dấu + sẽ có tác dụng ép kiểu dữ liệu thành number
-    choice = +prompt(`
-        ===================================
-        HỆ THỐNG QUẢN LÝ ĐẶT VÉ MOONLIGHT CINEMA
-        ===================================
-        1. Hiển thị danh sách đơn đặt vé
-        2. Thêm đơn đặt vé mới
-        3. Cập nhật đơn đặt vé
-        4. Xóa đơn đặt vé
-        5. Tìm kiếm đơn đặt vé theo tên phim
-        0. Thoát chương trình
-        ====================================
-        Vui lòng nhập lựa chọn của bạn (0 - 5):
+    let input = prompt(`
+===================================
+HỆ THỐNG QUẢN LÝ ĐẶT VÉ MOONLIGHT CINEMA
+===================================
+1. Hiển thị danh sách đơn đặt vé
+2. Thêm đơn đặt vé mới
+3. Cập nhật đơn đặt vé
+4. Xóa đơn đặt vé
+5. Tìm kiếm đơn đặt vé theo tên phim
+0. Thoát chương trình
+===================================
+Vui lòng nhập lựa chọn của bạn (0 - 5):
     `);
+
+    if (input === null) {
+      alert("Thoát chương trình");
+      break;
+    }
+
+    if (input.trim() === "") {
+      alert("Vui lòng nhập lựa chọn");
+      continue;
+    }
+
+    choice = Number(input);
 
     switch (choice) {
       case 1:
-        // 1. Hiển thị danh sách đơn đặt vé
         displayBookings(bookings);
-
         break;
+
       case 2:
-        // 2. Thêm đơn đặt vé mới
         handleCreateBooking();
-
         break;
+
       case 3:
-        // 3. Cập nhật đơn đặt vé"
         handleUpdateBooking();
-
         break;
+
       case 4:
-        // 4. Xóa đơn đặt vé
         handleDeleteBooking();
-
         break;
+
       case 5:
-        // 5. Tìm kiếm đơn đặt vé theo tên phim"
         handleSearchBooking();
-
         break;
+
       case 0:
         alert("Thoát chương trình");
         break;
